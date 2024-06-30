@@ -16,14 +16,13 @@ import arcade
 
 # --- Constants ---
 SPRITE_SCALING_PLAYER = 0.07
-SPRITE_SCALING_COIN = 0.3
-COIN_COUNT = 50
+SPRITE_SCALING_ENEMY = 0.9
 
 SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 600
 
 
-class Coin(arcade.Sprite):
+class Enemy(arcade.Sprite):
 
     def __init__(self, filename, sprite_scaling):
 
@@ -31,7 +30,7 @@ class Coin(arcade.Sprite):
 
         self.change_x = 0
         self.change_y = 0
-        self.spin_rate = 0
+
 
     def on_update(self, delta_time: float = 1 / 60) -> None:
 
@@ -52,13 +51,6 @@ class Coin(arcade.Sprite):
         if self.top > SCREEN_HEIGHT:
             self.change_y *= -1
 
-        # make the coin spin - the spin rate is determined when the coin is created in the window class
-        self.angle += self.spin_rate
-
-        # If we rotate past 360, reset it back a turn.
-        if self.angle > 359:
-            self.angle -= 360
-
 
 class MyGame(arcade.Window):
     """ Our custom Window Class"""
@@ -70,7 +62,7 @@ class MyGame(arcade.Window):
 
         # Variables that will hold sprite lists
         self.player_list = None
-        self.coin_list = None
+        self.enemy_list = None
 
         # Set up the player info
         self.player_sprite = None
@@ -86,7 +78,7 @@ class MyGame(arcade.Window):
 
         # Sprite lists
         self.player_list = arcade.SpriteList()
-        self.coin_list = arcade.SpriteList()
+        self.enemy_list = arcade.SpriteList()
 
         # Score
         self.score = 0
@@ -98,27 +90,21 @@ class MyGame(arcade.Window):
         self.player_sprite.center_y = 50
         self.player_list.append(self.player_sprite)
 
-        # Create the coins
-        for i in range(COIN_COUNT):
+        # Create the enemy instance
+        zombie = Enemy("Zombie.png", SPRITE_SCALING_ENEMY)
 
-            # Create the coin instance
-            # Coin image from kenney.nl
-            coin = Coin(":resources:images/items/coinGold.png", SPRITE_SCALING_COIN)
-
-            # Position the coin
-            coin.center_x = random.randrange(SCREEN_WIDTH)
-            coin.center_y = random.randrange(SCREEN_HEIGHT)
-            coin.change_x = random.randrange(-3, 4)
-            coin.change_y = random.randrange(-3, 4)
-            coin.spin_rate = random.randrange(-3, 4)
-
-            # Add the coin to the lists
-            self.coin_list.append(coin)
+        # Position the enemy
+        zombie.center_x = random.randrange(SCREEN_WIDTH)
+        zombie.center_y = random.randrange(SCREEN_HEIGHT)
+        zombie.change_x = random.randrange(-3, 4)
+        zombie.change_y = random.randrange(-3, 4)
+        # Add the coin to the lists
+        self.enemy_list.append(zombie)
 
     def on_draw(self):
         """ Draw everything """
         arcade.start_render()
-        self.coin_list.draw()
+        self.enemy_list.draw()
         self.player_list.draw()
 
         # Put the text on the screen.
@@ -137,15 +123,15 @@ class MyGame(arcade.Window):
 
         # Call update on all sprites (The sprites don't do much in this
         # example though.)
-        self.coin_list.on_update(delta_time)
+        self.enemy_list.on_update(delta_time)
 
         # Generate a list of all sprites that collided with the player.
         hit_list = arcade.check_for_collision_with_list(self.player_sprite,
-                                                        self.coin_list)
+                                                        self.enemy_list)
 
         # Loop through each colliding sprite, remove it, and add to the score.
-        for coin in hit_list:
-            coin.remove_from_sprite_lists()
+        for enemy in hit_list:
+            enemy.remove_from_sprite_lists()
             self.score += 1
 
 
